@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Театры по регионам</title>
+    <style>
+        h2{
+            text-align: center;
+            color: white;
+            font-family: ‘Lato’, sans-serif;
+            font-size: 54px;
+            font-weight: 300;
+            line-height: 58px;
+            margin: 0 0 58px;
+            padding: 15px;
+        }
+
+        p { color: white;
+            font-family: ‘Lucida Sans’, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 26px;
+            text-indent: 30px;
+            margin: 0;
+            text-align: center;
+        }
+
+
+        body {
+            background-image: url("https://vestikavkaza.ru/upload/2017-11-05/150989570459ff2e1815da82.13720115.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            backdrop-filter: blur(5px);
+        }
+
+       #table-container {
+           width: 80%;
+           height: 90%;
+           margin: auto;
+           display: table;
+           padding: 10%;
+       }
+
+       #cells-table {
+            width: 100%;
+            margin-bottom: 10px;
+            border: 5px solid #fff;
+            border-top: 5px solid #fff;
+            border-bottom: 3px solid #fff;
+            border-collapse: collapse;
+            outline: 3px solid #ffd300;
+            font-size: 15px;
+            padding: 15px;
+            background: #fff!important;
+        }
+        #cells-table th {
+            font-weight: bold;
+            padding: 15px;
+            background: #ffd300;
+            border: none;
+            text-align: left;
+            font-size: 15px;
+            border-top: 3px solid #fff;
+            border-bottom: 3px solid #ffd300;
+        }
+        #cells-table td {
+            padding: 15px;
+            border: none;
+            border-top: 3px solid #fff;
+            border-bottom: 3px solid #fff;
+            font-size: 15px;
+        }
+
+        #cells-table tbody tr:nth-child(even){
+            background: #f8f8f8!important;
+        }
+
+        #chart {
+            background-color: white;
+            padding-bottom: 7px;
+        }
+
+        #chart-container {
+            width: 80%;
+            height: 90%;
+            margin: auto;
+            display: table;
+            padding: 10%;
+        }
+
+        a.knopka {
+          color: #fff;
+          text-decoration: none;
+          user-select: none;
+          background: #ffd300;
+          padding: .7em 1.5em;
+          outline: none;
+          align-self: center;
+
+        }
+        a.knopka:hover { background: #FFC700; }
+        a.knopka:active { background: #F2D365; }
+
+        #button {
+            margin: auto;
+            display: table;
+            padding: 10%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.min.js" integrity="sha512-VCHVc5miKoln972iJPvkQrUYYq7XpxXzvqNfiul1H4aZDwGBGC0lq373KNleaB2LpnC2a/iNfE5zoRYmB4TRDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <h2>Сколько театров в каждом из округов России</h2>
+    <div id="text">
+    <p>Театры в России традиционно одна из гордостей страны. Мы собрали информацию с сайта Министерства культуры о том, в каких округах больше всего театров. Лидером, логично, оказался Центральный Федеральный округ. Также в топ-3 вошли: Приволжский федеральный округ и Сибирский федеральный округ. Меньше всего театров в Северо-Кавказском федеральном округе.</p>
+    </div>
+    <div id="main-container">
+        <div id="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
+    <p><b>Ниже представленны исходные данные</b></p>
+    <div id="table-container">
+        <table id="cells-table">
+            <thead>
+                <tr>
+                    <th>Округ</th>
+                    <th>Количество театров</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for elements in data %}
+                     <tr>
+                        <td>{{ elements['district_name'] }}</td>
+                        <td>{{ elements['theaters_count'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+    <div id="button"><a href="#" class="knopka" onclick="window.location.href = 'https://opendata.mkrf.ru/opendata/7705851331-stat_theaters_svod#a:eyJ0YWIiOiJidWlsZF90YWJsZSJ9';">Источник данных</a></div>
+
+</body>
+<script>
+    const ctx = document.getElementById('chart')
+
+    const config = getDataConfig({{ data | tojson }})
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: config,
+      options: {
+        scales: {
+        y: {
+            beginAtZero: true
+        }
+    }
+  },
+    });
+
+    function getDataConfig(data) {
+        let labels = [];
+        let dataRows = [];
+
+        for (let i = 0; i < data.length; i++) {
+            const current = data[i];
+
+            if (current['district_name'] && current['theaters_count']){
+                labels.push(current['district_name']);
+                dataRows.push(current['theaters_count']);
+            }
+
+        }
+
+        const cfg = {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Всего театорв в штуках',
+              data: dataRows,
+              backgroundColor: 'rgba(250, 198, 14, 0.8)',
+              borderColor: 'rgb(250, 155, 14)',
+              borderWidth: 3,
+            }
+          ]
+        };
+
+        return cfg;
+    }
+
+    console.log(getDataConfig({{ data | tojson }}));
+</script>
+</html>
